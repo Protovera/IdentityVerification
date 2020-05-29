@@ -1,0 +1,27 @@
+{
+  "name": "bitidentity",
+  "version": "1.0.1",
+  "description": "bitIdentity is a protocol to attach the identity to the bitcoinsv transaction",
+  "main": "bitIdentity.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bloodchen/bitIdentity.git"
+  },
+  "keywords": [
+    "bsv",
+    "bitcoin",
+    "identity"
+  ],
+  "author": "bloodchen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bloodchen/bitIdentity/issues"
+  },
+  "homepage": "https://github.com/bloodchen/bitIdentity#readme",
+  "dependencies": {
+    "filepay": "^2.0.4"
+  }
+}
