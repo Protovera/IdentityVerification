@@ -198,12 +198,14 @@ var genData2signFromBitbus = function(bitbusRtx) {
 
 var getBitIDFromBitbus = function(bitbusRtx) {
 		let ret = [];
+		let pos = 0;
 		bitbusRtx.out.forEach((out) => {
 			if (out.o1 == "OP_RETURN" && out.s2 == bitId_Protocol) {
 				const pk = filepay.bsv.PublicKey.fromString(out.s3);
 				const sig = filepay.bsv.crypto.Signature.fromString(out.s4);
-				ret.push({ publicKey: pk, sig: sig });
+				ret.push({ publicKey: pk, sig: sig,pos:pos });
 			}
+			pos++;
 		});
 		return ret;
 	}
