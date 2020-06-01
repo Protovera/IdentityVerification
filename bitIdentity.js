@@ -72,7 +72,7 @@ var verifyID = function(rawtx) {
 	//console.log(tx);
 	const data2sign = genData2sign(tx);
 	//console.log("data2sign====="+data2sign);
-	const bids = getBitId(tx);
+	const bids = getBitID(tx);
 	console.log(bids);
 	var hash = bsv.crypto.Hash.sha256(Buffer.from(data2sign));
 	//	console.log("hash="+hash.toString('hex'));
@@ -128,6 +128,7 @@ var genData2sign = function(tx) {
 			data2sign += sc.toHex() + out._satoshis;
 		}
 	});
+	console.log("data2sign=" + data2sign);
 	return data2sign;
 }
 
@@ -188,7 +189,7 @@ var genData2signFromBitbus = function(bitbusRtx) {
     }
   });
 
-  console.log("data2sign=" + data2sign);
+  console.log("bitbus data2sign=" + data2sign);
   return data2sign;
 }
 
@@ -205,16 +206,15 @@ var getBitIDFromBitbus = function(bitbusRtx) {
 	}
 
 var verifyIDFromBitbus = function(bitbusRtx) {
-		console.log(JSON.stringify(bitbusRtx));
+		//console.log(JSON.stringify(bitbusRtx));
 		const data2sign = genData2signFromBitbus(bitbusRtx);
-		console.log("data2sign====="+data2isgn);
-		const bids = getBitIdFromBitbus(bitbusRtx);
+		const bids = getBitIDFromBitbus(bitbusRtx);
 		console.log(bids);
 		let hash = null;
 		if (isBrowser() == false) {
-			hash = filepay.bsv.crypto.Hash.sha256(Buffer.from(data2sign));
+			hash = filepay.bsv.crypto.Hash.sha256(bsv.deps.Buffer.from(data2sign));
 		} else {
-			hash = filepay.bsv.crypto.Hash.sha256(filepay.bsv.deps.Buffer(data2sign));
+			hash = filepay.bsv.crypto.Hash.sha256(bsv.deps.Buffer.from(data2sign));
 		}
 		if (bids && bids.length > 0) {
 			for(let i = 0; i < bids.length; i++) {
