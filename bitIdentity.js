@@ -137,8 +137,9 @@ var genScriptFromBitbus = function(out) {
   let data = "";
   for (var i = 0; i < out.len; i++) {
     if (out["s" + i]) {
-      let opcodenum = 0;
-      const len = out["s" + i].length;
+      let opcodenum = 0; 
+      const len = bsv.deps.Buffer.from(out["b" + i], 'base64').length;
+      
 
       if (len >= 0 && len < bsv.Opcode.OP_PUSHDATA1) {
         opcodenum = 0;
