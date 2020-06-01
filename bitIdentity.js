@@ -1,7 +1,12 @@
 
-const filepay = require("filepay");
-const bsv = filepay.bsv;
+var isBrowser = isBrowser || new Function("try {return this===window;}catch(e){ return false;}");
 
+var filepay;
+var bsv;
+if (isBrowser() == false) {
+	filepay = require("filepay");
+	bsv = filepay.bsv;
+}
 
 
 const bitId_Protocol = "14kxqYv3emHGwf8m6YgSYLQkGCvn9Qrgr9";
@@ -9,11 +14,11 @@ const bitId_Protocol = "14kxqYv3emHGwf8m6YgSYLQkGCvn9Qrgr9";
 const PLACEHOLDER_LEN = 150;
 const placeholder = " ".repeat(PLACEHOLDER_LEN);
 
-class BitID{
-static gentx (config) {
+
+var gentx = function (config) {
 	return new Promise((resolve, reject) => {
 		config.pay.to.forEach((out) => {
-			if (out.protocol && out.protocol == "bitIdentity") {
+			if (out.protocol && out.protocol.toLowerCase() == "bitidentity") {
 				const pk = bsv.PrivateKey.fromWIF(out.value.privateKey);
 				const pubKey = bsv.PublicKey.fromPrivateKey(pk);
 				out["data"] = [bitId_Protocol, pubKey.toString(), placeholder];
@@ -25,12 +30,12 @@ static gentx (config) {
 		filepay.build(config, (e, tx) => {
 			if (tx) {
 				console.log("rawtx1=", tx.toString());
-				let data2sign = BitID.genData2sign(tx);
+				let data2sign = genData2sign(tx);
 				console.log("data2sign=" + data2sign);
 				var hash = bsv.crypto.Hash.sha256(Buffer.from(data2sign));
 				console.log("hash=" + hash.toString("hex"));
 				config.pay.to.forEach((out) => {
-					if (out.protocol && out.protocol == "bitIdentity") {
+					if (out.protocol && out.protocol.toLowerCase() == "bitidentity") {
 						const pKey = bsv.PrivateKey.fromWIF(
 							out.pvalue.privateKey
 						);
@@ -48,7 +53,7 @@ static gentx (config) {
 				console.log(config.pay.to);
 				filepay.build(config, (e, tx) => {
 					if (tx) {
-						console.log("data2sign111=" + BitID.genData2sign(tx));
+						console.log("data2sign111=" + genData2sign(tx));
 						console.log("rawtx=" + tx.toString());
 						resolve(tx.toString());
 					} else {
@@ -62,12 +67,12 @@ static gentx (config) {
 	});
 }
 
-static verifyID(rawtx) {
+var verifyID = function(rawtx) {
 	const tx = bsv.Transaction(rawtx);
 	//console.log(tx);
-	const data2sign = BitID.genData2sign(tx);
+	const data2sign = genData2sign(tx);
 	//console.log("data2sign====="+data2sign);
-	const bids = BitID.getBitId(tx);
+	const bids = getBitId(tx);
 	console.log(bids);
 	var hash = bsv.crypto.Hash.sha256(Buffer.from(data2sign));
 	//	console.log("hash="+hash.toString('hex'));
@@ -80,8 +85,9 @@ static verifyID(rawtx) {
 	return true;
 }
 
-static getBitId(tx) {
+var getBitID = function(tx) {
 	let ret = [];
+	let pos = 0;
 	tx.outputs.forEach((out) => {
 		const sc = new bsv.Script.fromBuffer(out._scriptBuffer);
 		const sc_len = sc.chunks.length;
@@ -93,13 +99,14 @@ static getBitId(tx) {
 				const sig = bsv.crypto.Signature.fromString(
 					sc.chunks[4].buf.toString()
 				);
-				ret.push({ publicKey: pk, sig: sig });
+				ret.push({ publicKey: pk, sig: sig, pos:pos });
 			}
 		}
+		pos++;
 	});
 	return ret;
 }
-static genData2sign(tx) {
+var genData2sign = function(tx) {
 	let data2sign = "";
 	//console.log(tx);
 	tx.inputs.forEach((inp) => {
@@ -123,6 +130,114 @@ static genData2sign(tx) {
 	});
 	return data2sign;
 }
+
+var genScriptFromBitbus = function(out) {
+  //TODO: figure out how to gen script without workaround;
+  let data = "";
+  for (var i = 0; i < out.len; i++) {
+    if (out["s" + i]) {
+      let opcodenum = 0;
+      const len = out["s" + i].length;
+
+      if (len >= 0 && len < bsv.Opcode.OP_PUSHDATA1) {
+        opcodenum = 0;
+      } else if (len < Math.pow(2, 8)) {
+        opcodenum = bsv.Opcode.OP_PUSHDATA1;
+      } else if (len < bsv.Math.pow(2, 16)) {
+        opcodenum = bsv.Opcode.OP_PUSHDATA2;
+      } else if (len < Math.pow(2, 32)) {
+        opcodenum = bsv.Opcode.OP_PUSHDATA4;
+      } else {
+        throw new Error("You can't push that much data");
+      }
+
+      if (opcodenum) {
+        opcodenum = opcodenum.toString(16);
+        data += opcodenum;
+      }
+      let hex = len.toString(16);
+      if (hex.length < 2) hex = "0" + hex;
+
+      data += hex + out["h" + i];
+    } else if (out["o" + i]) {
+      let hex = bsv.Opcode.fromString(out["o" + i]).toHex();
+      if (hex.length < 2) hex = "0" + hex;
+      data += hex;
+    }
+  }
+  return data;
 }
 
-module.exports = BitID;
+var genData2signFromBitbus = function(bitbusRtx) {
+  let data2sign = "";
+  bitbusRtx.in.forEach((inp) => {
+    data2sign += inp.e.h + inp.e.i;
+  });
+  bitbusRtx.out.forEach((out) => {
+    if (out.o1 && out.o1 == "OP_RETURN") {
+      if (out.s2 && out.s2 == bitId_Protocol) {
+        console.log("found bitID. PublicKey=" + out.s3);
+        data2sign += out.s3; //public key
+      } else {
+        // data2sign += sc.toHex();
+        data2sign += genScriptFromBitbus(out);
+      }
+    } else {
+      // data2sign += sc.toHex() + out._satoshis;
+      data2sign += genScriptFromBitbus(out) + out.e.v;
+    }
+  });
+
+  console.log("data2sign=" + data2sign);
+  return data2sign;
+}
+
+var getBitIDFromBitbus = function(bitbusRtx) {
+		let ret = [];
+		bitbusRtx.out.forEach((out) => {
+			if (out.o1 == "OP_RETURN" && out.s2 == bitId_Protocol) {
+				const pk = filepay.bsv.PublicKey.fromString(out.s3);
+				const sig = filepay.bsv.crypto.Signature.fromString(out.s4);
+				ret.push({ publicKey: pk, sig: sig });
+			}
+		});
+		return ret;
+	}
+
+var verifyIDFromBitbus = function(bitbusRtx) {
+		console.log(JSON.stringify(bitbusRtx));
+		const data2sign = genData2signFromBitbus(bitbusRtx);
+		console.log("data2sign====="+data2isgn);
+		const bids = getBitIdFromBitbus(bitbusRtx);
+		console.log(bids);
+		let hash = null;
+		if (isBrowser() == false) {
+			hash = filepay.bsv.crypto.Hash.sha256(Buffer.from(data2sign));
+		} else {
+			hash = filepay.bsv.crypto.Hash.sha256(filepay.bsv.deps.Buffer(data2sign));
+		}
+		if (bids && bids.length > 0) {
+			for(let i = 0; i < bids.length; i++) {
+				let bid = bids[i];
+				var verified = filepay.bsv.crypto.ECDSA.verify(hash, bid.sig, bid.publicKey);
+				if (!verified) return false;
+			}
+		}
+		// bids.forEach((bid) => {
+		// 	var verified = filepay.bsv.crypto.ECDSA.verify(hash, bid.sig, bid.publicKey);
+		// 	if (!verified) return false;
+		// });
+		return true;
+	}
+
+module.exports = {
+	gentx:gentx,
+	verifyID:verifyID,
+	getBitID:getBitID,
+	genData2sign:genData2sign,
+	verifyIDFromBitbus:verifyIDFromBitbus,
+	getBitIDFromBitbus:getBitIDFromBitbus,
+	genData2signFromBitbus:genData2signFromBitbus,
+	genScriptFromBitbus:genScriptFromBitbus
+
+};

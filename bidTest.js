@@ -2,8 +2,8 @@ const BitID = require("./bitIdentity.js");
 const filepay = require("filepay");
 const bsv = filepay.bsv;
 
-var privateKey = "your payment pivate key"; //please replace with your key
-var idPrivateKey = "your identity private key"; //please replace with your key
+var privateKey = "L2dxHxsLsf9qB4976aEbRyRwHBCUda7aFofXXx62fvdaRvZ7nVBK";
+var idPrivateKey = "L4NbhA3Sqe9fn7FRLCg3LnLHDrqW7QniyWAJJGtnDxYff5WMJ63C";
 
 console.log(BitID);
 (async () => {
