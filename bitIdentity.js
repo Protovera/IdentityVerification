@@ -78,10 +78,12 @@ var verifyID = function(rawtx) {
 	//	console.log("hash="+hash.toString('hex'));
 	//	console.log("sig="+sig.sig.toString());
 	//	console.log("pubkey="+sig.publicKey.toString('hex'));
-	bids.forEach((bid) => {
+	for (var i = 0; i < bids.length; i++) {
+		const bid = bids[i];
 		var verified = bsv.crypto.ECDSA.verify(hash, bid.sig, bid.publicKey);
 		if (!verified) return false;
-	});
+	}
+	
 	return true;
 }
 
