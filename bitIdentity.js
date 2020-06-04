@@ -122,9 +122,9 @@ var genData2sign = function(tx) {
 				console.log(
 					"found bitID. PublicKey=" + sc.chunks[3].buf.toString()
 				);
-				data2sign += sc.chunks[3].buf.toString(); //public key
+				data2sign += sc.chunks[3].buf.toString() + out._satoshis ; //public key
 			} else {
-				data2sign += sc.toHex();
+				data2sign += sc.toHex() + out._satoshis;;
 			}
 		} else {
 			data2sign += sc.toHex() + out._satoshis;
@@ -181,10 +181,10 @@ var genData2signFromBitbus = function(bitbusRtx) {
     if (out.o1 && out.o1 == "OP_RETURN") {
       if (out.s2 && out.s2 == bitId_Protocol) {
         console.log("found bitID. PublicKey=" + out.s3);
-        data2sign += out.s3; //public key
+        data2sign += out.s3 + out.e.v; //public key
       } else {
         // data2sign += sc.toHex();
-        data2sign += genScriptFromBitbus(out);
+        data2sign += genScriptFromBitbus(out) + out.e.v;
       }
     } else {
       // data2sign += sc.toHex() + out._satoshis;
