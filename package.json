@@ -1,6 +1,6 @@
 {
   "name": "bitidentity",
-  "version": "1.0.15",
+  "version": "1.0.17",
   "description": "bitIdentity is a protocol to attach the identity to the bitcoinsv transaction",
   "main": "bitIdentity.js",
   "scripts": {
@@ -22,6 +22,6 @@
   },
   "homepage": "https://github.com/bloodchen/bitIdentity#readme",
   "dependencies": {
-    "filepay": "^2.0.4"
+    "filepay": "^2.0.6"
   }
 }

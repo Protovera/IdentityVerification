@@ -133,6 +133,18 @@ var genData2sign = function(tx) {
 	console.log("data2sign=" + data2sign);
 	return data2sign;
 }
+function littleEndian(strHex){
+  if(strHex.length%2!==0){
+    strHex = "0"+strHex;
+  }
+  let strRet="";
+  for (let c = strHex.length-2; c >= 0; c -= 2){
+    let by = strHex.substr(c, 2);
+    console.log(by);
+    strRet+=by;
+}
+  return strRet;
+}
 
 var genScriptFromBitbus = function(out) {
   //TODO: figure out how to gen script without workaround;
@@ -147,7 +159,7 @@ var genScriptFromBitbus = function(out) {
         opcodenum = 0;
       } else if (len < Math.pow(2, 8)) {
         opcodenum = bsv.Opcode.OP_PUSHDATA1;
-      } else if (len < bsv.Math.pow(2, 16)) {
+      } else if (len < Math.pow(2, 16)) {
         opcodenum = bsv.Opcode.OP_PUSHDATA2;
       } else if (len < Math.pow(2, 32)) {
         opcodenum = bsv.Opcode.OP_PUSHDATA4;
@@ -160,7 +172,8 @@ var genScriptFromBitbus = function(out) {
         data += opcodenum;
       }
       let hex = len.toString(16);
-      if (hex.length < 2) hex = "0" + hex;
+      //if (hex.length < 2) hex = "0" + hex;
+      hex = littleEndian(hex);
 
       data += hex + out["h" + i];
     } else if (out["o" + i]) {
