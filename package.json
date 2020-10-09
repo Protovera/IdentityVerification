@@ -1,8 +1,8 @@
 {
   "name": "bitidentity",
-  "version": "1.0.22",
+  "version": "1.0.32",
   "description": "bitIdentity is a protocol to attach the identity to the bitcoinsv transaction",
-  "main": "bitIdentity.js",
+  "main": "bitIdentity.min.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,6 +15,10 @@
     "bitcoin",
     "identity"
   ],
+  "files": [
+    "src/bitIdentity.js",
+    "bitIdentity.min.js"
+  ],
   "author": "bloodchen",
   "license": "MIT",
   "bugs": {
@@ -23,5 +27,14 @@
   "homepage": "https://github.com/bloodchen/bitIdentity#readme",
   "dependencies": {
     "filepay": "^2.0.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.11.0",
+    "@babel/preset-env": "^7.11.0",
+    "bitsocket-connect": "^1.4.0",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-terser": "^6.1.0",
+    "rollup-plugin-uglify": "^6.0.4",
+    "run-bitbus": "^1.0.5"
   }
 }
